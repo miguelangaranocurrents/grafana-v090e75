@@ -2,6 +2,7 @@ import { Component } from 'react';
 import * as React from 'react';
 
 import { DataFrame, TimeRange } from '@grafana/data';
+import { LegendDisplayMode } from '@grafana/schema';
 
 import { PanelContextRoot } from '../../components/PanelChrome/PanelContext';
 import { hasVisibleLegendSeries, PlotLegend } from '../../components/uPlot/PlotLegend';
@@ -39,7 +40,15 @@ class UnthemedTimeSeries extends Component<TimeSeriesProps> {
   renderLegend = (config: UPlotConfigBuilder) => {
     const { legend, frames } = this.props;
 
-    if (!config || (legend && !legend.showLegend) || !hasVisibleLegendSeries(config, frames)) {
+    // A hidden display mode renders no legend content. Returning null here (rather than an empty
+    // legend element) lets VizLayout render the chart at full size; an empty legend measures 0px
+    // and VizLayout would otherwise never render the chart.
+    if (
+      !config ||
+      (legend && !legend.showLegend) ||
+      legend?.displayMode === LegendDisplayMode.Hidden ||
+      !hasVisibleLegendSeries(config, frames)
+    ) {
       return null;
     }
 
